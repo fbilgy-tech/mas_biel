@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIEL_HEART_OVERRIDE</title>
+    <title>SYSTEM_OVERRIDE // MAS_BIEL</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500;700&display=swap');
 
+        /* Reset & Base */
         * { margin: 0; padding: 0; box-sizing: border-box; background: transparent; }
 
         body {
@@ -20,81 +21,93 @@
             overflow: hidden;
         }
 
-        /* Animasi Background Jantung Berdetak */
+        /* Background Particle Canvas */
         #heart-canvas {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
+        /* Terminal UI Box */
         .terminal {
             position: relative;
             z-index: 10;
             width: 90%;
             max-width: 550px;
-            padding: 40px;
-            background: rgba(0, 0, 0, 0.7); /* Transparansi biar animasi kelihatan */
-            backdrop-filter: blur(8px);
-            border-left: 3px solid #ff004c;
-            box-shadow: -20px 0 50px rgba(255, 0, 76, 0.1);
+            padding: 45px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            border-left: 4px solid #ff004c;
+            box-shadow: -20px 0 60px rgba(255, 0, 76, 0.2);
+            border-radius: 4px;
         }
 
         .sys-label {
-            color: #444;
+            color: #555;
             font-size: 0.7rem;
-            letter-spacing: 5px;
+            letter-spacing: 6px;
             margin-bottom: 25px;
+            font-weight: 300;
         }
 
         .target-name {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 40px;
+            margin-bottom: 45px;
             text-transform: uppercase;
-            letter-spacing: -1px;
-            background: linear-gradient(to right, #fff, #ff004c);
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, #ffffff, #ff004c, #ff7eb3);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 0, 76, 0.3);
         }
 
+        /* Message Logic */
         .message-line {
-            font-size: 1.1rem;
-            line-height: 1.8;
+            font-size: 1.15rem;
+            line-height: 1.9;
             opacity: 0;
-            transform: translateY(10px);
-            margin-bottom: 15px;
+            transform: translateY(15px);
+            margin-bottom: 18px;
         }
 
-        .highlight { color: #ff004c; font-weight: 700; text-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }
+        .highlight { 
+            color: #ff004c; 
+            font-weight: 700; 
+            text-shadow: 0 0 15px rgba(255, 0, 76, 0.6); 
+        }
 
-        /* Animasi Muncul */
-        .l1 { animation: fadeInUp 1s forwards 1s; }
-        .l2 { animation: fadeInUp 1s forwards 3s; }
-        .l3 { animation: fadeInUp 1s forwards 5s; }
+        /* Typing Animations */
+        .l1 { animation: fadeInUp 1s forwards 1.2s; }
+        .l2 { animation: fadeInUp 1s forwards 3.5s; }
+        .l3 { animation: fadeInUp 1s forwards 5.8s; }
 
         @keyframes fadeInUp {
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Custom Blinking Cursor */
         .cursor {
             display: inline-block;
-            width: 10px;
-            height: 1.2rem;
+            width: 12px;
+            height: 1.3rem;
             background: #ff004c;
             animation: blink 0.8s infinite;
             vertical-align: middle;
-            margin-left: 5px;
+            margin-left: 8px;
+            box-shadow: 0 0 10px #ff004c;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
 
         .footer {
-            margin-top: 40px;
-            font-size: 0.6rem;
-            color: #333;
-            letter-spacing: 3px;
+            margin-top: 50px;
+            font-size: 0.65rem;
+            color: #444;
+            letter-spacing: 4px;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -103,7 +116,7 @@
     <canvas id="heart-canvas"></canvas>
 
     <div class="terminal">
-        <div class="sys-label">CORE_SYSTEM_ACCESS // MAS_BIEL</div>
+        <div class="sys-label">AUTH_LEVEL: ROOT // DEV_BY: BIEL07</div>
         
         <div class="target-name">WIWIT ANISA</div>
         
@@ -115,24 +128,29 @@
             </div>
         </div>
 
-        <div class="footer">ENCRYPTED_WITH_LOVE // 2026</div>
+        <div class="footer">ENCRYPTED_WITH_LOVE // SINCE_2026</div>
     </div>
 
     <script>
         const canvas = document.getElementById('heart-canvas');
         const ctx = canvas.getContext('2d');
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
+        let width, height;
         let particles = [];
         const heartPoints = [];
 
-        // Membuat koordinat jantung
-        for (let t = 0; t <= Math.PI * 2; t += 0.05) {
-            const x = 16 * Math.pow(Math.sin(t), 3);
-            const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-            heartPoints.push({ x: x * 15, y: y * 15 });
+        // Inisialisasi Ukuran
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            
+            heartPoints.length = 0;
+            // Rumus Matematika Jantung (Cardioid)
+            for (let t = 0; t <= Math.PI * 2; t += 0.08) {
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                heartPoints.push({ x: x * 16, y: y * 16 });
+            }
         }
 
         class Particle {
@@ -141,36 +159,39 @@
             }
             reset() {
                 const target = heartPoints[Math.floor(Math.random() * heartPoints.length)];
-                this.x = canvas.width / 2;
-                this.y = canvas.height / 2;
-                this.targetX = target.x + canvas.width / 2;
-                this.targetY = target.y + canvas.height / 2;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
+                this.x = width / 2;
+                this.y = height / 2;
+                this.targetX = target.x + width / 2;
+                this.targetY = target.y + height / 2;
+                this.speed = 0.03 + Math.random() * 0.04;
                 this.alpha = Math.random();
-                this.color = Math.random() > 0.5 ? "#ff004c" : "#ffffff";
+                this.color = Math.random() > 0.3 ? "#ff004c" : "#ffffff";
+                this.size = Math.random() * 1.5 + 0.5;
             }
             update() {
-                this.x += (this.targetX - this.x) * 0.05;
-                this.y += (this.targetY - this.y) * 0.05;
-                this.alpha -= 0.005;
+                this.x += (this.targetX - this.x) * this.speed;
+                this.y += (this.targetY - this.y) * this.speed;
+                this.alpha -= 0.004;
                 if (this.alpha <= 0) this.reset();
             }
             draw() {
                 ctx.globalAlpha = this.alpha;
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 1.2, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < 350; i++) {
-            particles.push(new Particle());
+        function setup() {
+            init();
+            for (let i = 0; i < 400; i++) {
+                particles.push(new Particle());
+            }
         }
 
         function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, width, height);
             particles.forEach(p => {
                 p.update();
                 p.draw();
@@ -178,12 +199,10 @@
             requestAnimationFrame(animate);
         }
 
+        window.addEventListener('resize', init);
+        
+        setup();
         animate();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
     </script>
 </body>
 </html>
